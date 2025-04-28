@@ -1,12 +1,13 @@
-# Stage 1: Build the application
-FROM gradle:8-jdk21 AS build
+# Stage 1: Build with JDK
+FROM gradle:8-jdk21-alpine AS build
 WORKDIR /app
 COPY . .
-RUN gradle build --no-daemon
+RUN gradle build --no-daemon && \
+    gradle bootJar
 
-# Stage 2: Run the built application in a minimal runtime environment
-FROM eclipse-temurin:21-jre-jammy
+# Stage 2: Minimal runtime
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /app/build/libs/storage-node-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8090
 ENTRYPOINT ["java", "-jar", "app.jar"]
