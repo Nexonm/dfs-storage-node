@@ -12,7 +12,7 @@ RUN jlink --strip-debug \
           --no-header-files \
           --no-man-pages \
           --compress=2 \
-          --add-modules java.base,java.logging,java.sql,java.naming,java.desktop,\
+          --add-modules java.base,java.logging,java.naming,java.desktop,\
 java.management,java.security.jgss,java.instrument,\
 jdk.unsupported,java.xml,jdk.crypto.ec \
           --output /custom-jre

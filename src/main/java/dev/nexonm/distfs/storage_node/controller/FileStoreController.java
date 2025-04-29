@@ -23,11 +23,12 @@ public class FileStoreController {
             @RequestPart("file") MultipartFile file,
             @RequestPart("chunkId") String chunkUUID,
             @RequestPart("fileId") String fileUUID,
-            @RequestPart("chunkIndex") String chunkIndex) {
-        StoreChunkRequest request = new StoreChunkRequest(file, chunkUUID, fileUUID, Integer.parseInt(chunkIndex));
-        log.info("Received chunk: ID={}, fileId={}, index={}", request.getChunkUUID(), request.getFileUUID(),
+            @RequestPart("chunkIndex") String chunkIndex,
+            @RequestPart("hash") String hash) {
+        StoreChunkRequest request = new StoreChunkRequest(file, chunkUUID, fileUUID, Integer.parseInt(chunkIndex), hash);
+        log.info("Received chunk: fileID={}, chunkID={}, index={}", request.getFileUUID(), request.getChunkUUID(),
                 request.getChunkIndex());
-        service.storeFile(request);
-        return ResponseEntity.ok("File saved successfully.");
+        String filename = service.storeFile(request);
+        return ResponseEntity.ok(String.format("File saved successfully, name=%s", filename));
     }
 }

@@ -16,4 +16,5 @@ public class StoreChunkRequest {
     String chunkUUID;
     String fileUUID;
     int chunkIndex;
+    String hash;
 }
