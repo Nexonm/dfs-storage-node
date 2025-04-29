@@ -1,34 +1,105 @@
-# dfs-storage-node
-Distributed File System Metadata Storage Node repository. It stores chunk of bytes of file and returns it.
+# Distributed File Storage Node
+
+A Spring Boot service responsible for storing file chunks and serving them on demand. Integrates with the metadata server to ensure reliable distributed storage with chunk replication and integrity checks.
+
+## Key Features
+- **Chunk Storage**  
+  Stores file chunks with SHA-256 hash verification
+- **Replication Support**  
+  Works with metadata server to maintain chunk replicas across nodes
+- **Health Reporting**  
+  Metadata checks health beat every 15 seconds
+- **Chunk Integrity**  
+  Hash verification on storage and retrieval
 
 
-## Run commands
-For run you should specify 4 environmental variables:
-- SERVER_HOST - ip of the metadata server;
-- SERVER_PORT - port of the metadata server;
-- NODE_HOST - ip of the current node;
-- NODE_PORT - port of the current node.
+## Tech Stack
+- **Core**: Java 21, Spring Boot 3.4.4
+- **Networking**: WebClient, Reactive Streams
+- **Containerization**: Docker 24.0
 
-Build example:
+## Quick Start
+
+### Prerequisites
+- Docker Engine 24.0+
+- Metadata server running (from [dfs-metadata](https://github.com/Nexonm/dfs-metadata))
+
+### Basic Node Setup
+1. Build image:
 ```bash
 docker build -t dfs-storage-node .
 ```
-Linux run example:
+
+2. Configure the start command:
+
+| Variable | Required | Param         | Example | Description          |
+|----------|----------|---------------|---------|----------------------|
+| `SERVER_HOST` | Yes | <server_ip>   | 192.168.1.10 | Metadata server IP   |
+| `SERVER_PORT` | Yes | <server_port> | 8080 | Metadata server port |
+| `NODE_HOST` | Yes | <node_ip>     | 192.168.1.20 | Current node IP      |
+| `NODE_PORT` | Yes | <this_port>   | 8100 | Exposed node port    |
 ```bash
 docker run -d \
---name <container_name> \
--p <local_port>:8080 \
--e SERVER_HOST=<server_ip> \
--e SERVER_PORT=<server_port> \
--e NODE_HOST=<local_ip> \
--e NODE_PORT=<local_port> \
-dfs-storage-node
+  --name storage-node-0 \
+  -p <this_port>:8080 \
+  -e SERVER_HOST=<server_ip> \
+  -e SERVER_PORT=<server_port> \
+  -e NODE_HOST=<node_ip> \
+  -e NODE_PORT=<this_port> \
+  dfs-storage-node
 ```
 
-Fast windows run (add both ip values):
+### Multi-Node Cluster Example
 ```powershell
-docker run -d --name dfs-node0 -p 8100:8080 -e SERVER_HOST= -e SERVER_PORT=8080 -e NODE_HOST= -e NODE_PORT=8100 dfs-storage-node
+# Node 1
+docker run -d --name node-0 -p 8100:8080 -e SERVER_HOST=192.168.1.10 -e SERVER_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8100 dfs-storage-node
+
+# Node 2 
+docker run -d --name node-1 -p 8101:8080 -e SERVER_HOST=192.168.1.10 -e SERVER_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8101 dfs-storage-node
 ```
+
+## API Documentation
+### Chunk Retrieval Endpoint
+
+**Endpoint:**
+```http
+POST /api/chunk/download
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "fileUUID": "string (UUID)",
+  "chunkUUID": "string (UUID)", 
+  "chunkIndex": "integer"
+}
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8080/chunk \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fileUUID": "21b57063-babf-4e87-8b87-8e988ff35a07",
+    "chunkUUID": "4a9e0bf4-36ab-4165-828e-d3d128d6396b",
+    "chunkIndex": 1
+  }'
+```
+
+**Response:**
+- Status: 200 OK
+- Content-Type: application/octet-stream
+- Body: Raw chunk bytes
+
+**Error Codes:**
+
+| Code | Status | Description |
+|------|--------|-------------|
+| 400 | Bad Request | Invalid UUID format |
+| 404 | Not Found | Chunk not found |
+| 500 | Internal Error | Storage corruption detected |
+
 
 
 
