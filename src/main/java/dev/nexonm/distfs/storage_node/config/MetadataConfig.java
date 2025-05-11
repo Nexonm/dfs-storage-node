@@ -13,11 +13,11 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class MetadataConfig {
 
-    @Value("${server.host:localhost}")
-    private String serverHost;
+    @Value("${meta.host:localhost}")
+    private String metaHost;
 
-    @Value("${server.port:8080}")
-    private String serverPort;
+    @Value("${meta.port:8080}")
+    private String metaPort;
 
     @Value("${node.host:localhost}")
     private String nodeHost;
@@ -32,8 +32,8 @@ public class MetadataConfig {
 
     @PostConstruct
     public void logConfig() {
-        log.info("Metadata server configuration: host={}, port={}", serverHost, serverPort);
-        log.info("Will notify to: http://{}:{}/api/node/register", serverHost, serverPort);
+        log.info("Metadata server configuration: host={}, port={}", metaHost, metaPort);
+        log.info("Will notify to: http://{}:{}/api/node/register", metaHost, metaPort);
         log.info("Node server configuration: host={}, port={}", nodeHost, nodePort);
     }
 

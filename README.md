@@ -32,18 +32,18 @@ docker build -t dfs-storage-node .
 
 2. Configure the start command:
 
-| Variable | Required | Param         | Example | Description          |
-|----------|----------|---------------|---------|----------------------|
-| `SERVER_HOST` | Yes | <server_ip>   | 192.168.1.10 | Metadata server IP   |
-| `SERVER_PORT` | Yes | <server_port> | 8080 | Metadata server port |
-| `NODE_HOST` | Yes | <node_ip>     | 192.168.1.20 | Current node IP      |
-| `NODE_PORT` | Yes | <this_port>   | 8100 | Exposed node port    |
+| Variable    | Required | Param       | Example | Description          |
+|-------------|----------|-------------|---------|----------------------|
+| `META_HOST` | Yes | <meta_ip>   | 192.168.1.10 | Metadata server IP   |
+| `META_PORT` | Yes | <meta_port> | 8080 | Metadata server port |
+| `NODE_HOST` | Yes | <node_ip>   | 192.168.1.20 | Current node IP      |
+| `NODE_PORT` | Yes | <this_port> | 8100 | Exposed node port    |
 ```bash
 docker run -d \
   --name storage-node-0 \
   -p <this_port>:8080 \
-  -e SERVER_HOST=<server_ip> \
-  -e SERVER_PORT=<server_port> \
+  -e META_HOST=<meta_ip> \
+  -e META_PORT=<meta_port> \
   -e NODE_HOST=<node_ip> \
   -e NODE_PORT=<this_port> \
   dfs-storage-node
@@ -52,10 +52,10 @@ docker run -d \
 ### Multi-Node Cluster Example
 ```powershell
 # Node 1
-docker run -d --name node-0 -p 8100:8080 -e SERVER_HOST=192.168.1.10 -e SERVER_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8100 dfs-storage-node
+docker run -d --name node-0 -p 8100:8080 -e META_HOST=192.168.1.10 -e META_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8100 dfs-storage-node
 
 # Node 2 
-docker run -d --name node-1 -p 8101:8080 -e SERVER_HOST=192.168.1.10 -e SERVER_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8101 dfs-storage-node
+docker run -d --name node-1 -p 8101:8080 -e META_HOST=192.168.1.10 -e META_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8101 dfs-storage-node
 ```
 
 ## API Documentation
