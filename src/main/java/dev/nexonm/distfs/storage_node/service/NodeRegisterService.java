@@ -41,7 +41,7 @@ public class NodeRegisterService {
     }
 
     private String getUrl() {
-        return String.format("http://%s:%s/api/node/register", metadataConfig.getMetaHost(),
+        return String.format("https://%s:%s/api/node/register", metadataConfig.getMetaHost(),
                 metadataConfig.getMetaPort());
     }
 
