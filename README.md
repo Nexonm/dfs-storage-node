@@ -58,6 +58,46 @@ docker run -d --name node-0 -p 8100:8080 -e META_HOST=192.168.1.10 -e META_PORT=
 docker run -d --name node-1 -p 8101:8080 -e META_HOST=192.168.1.10 -e META_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8101 dfs-storage-node
 ```
 
+### Basic Node Setup With Volume Persistence
+- Prerequisite: Get familiar with Basic Node Setup Section
+
+1. Build image:
+```bash
+docker build -t dfs-storage-node .
+```
+
+2. Configure the start command:
+
+| Variable          | Required | Param         | Example      | Description                                                             |
+|-------------------|----------|---------------|--------------|-------------------------------------------------------------------------|
+| `FILE_UPLOAD_DIR` | Yes      | <upload_dir>  | /app/uploads | Directory in which all chunks will be saved. Should start with `/app/`. |
+| `<volume_name>`   | Yes      | <volume_name> | vol-node-N   | Name of volume that will be used to persist data                        |
+
+```bash
+docker volume create <volume_name>
+docker run -d \
+  --name storage-node-0 \
+  -p <this_port>:8080 \
+  -e META_HOST=<meta_ip> \
+  -e META_PORT=<meta_port> \
+  -e NODE_HOST=<node_ip> \
+  -e NODE_PORT=<this_port> \
+  -e FILE_UPLOAD_DIR=<upload_dir> \
+  -v <volume_name>:<upload_dir>
+  dfs-storage-node
+```
+3. Example of start
+
+```powershell
+# Node 1
+docker volume create vol-node-0
+docker run -d --name node-0 -p 8100:8080 -e META_HOST=192.168.1.10 -e META_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8100 -e FILE_UPLOAD_DIR=/app/uploads -v vol-node-0:/app/uploads dfs-storage-node
+
+# Node 2 
+docker volume create vol-node-1
+docker run -d --name node-1 -p 8101:8080 -e META_HOST=192.168.1.10 -e META_PORT=8080 -e NODE_HOST=192.168.1.20 -e NODE_PORT=8101 -e FILE_UPLOAD_DIR=/app/uploads -v vol-node-1:/app/uploads dfs-storage-node
+```
+
 ## API Documentation
 ### Chunk Retrieval Endpoint
 
