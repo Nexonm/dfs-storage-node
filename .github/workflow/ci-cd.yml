@@ -1,0 +1,85 @@
+name: Deploy Storage Nodes with Persistence
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build Storage Node Image
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Storage Node Image
+        run: docker build -t dfs-storage-node .
+
+      - name: Clean dangling images after build
+        run: |
+          docker image prune -f
+  test:
+    name: Test Connection to Metadata Server
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Test connection
+        run: |
+          # Node configuration parameters from secrets
+          META_HOST=${{ secrets.META_HOST }}
+          META_PORT=${{ secrets.META_PORT }}
+          # Send request
+          curl -f --retry 5 --retry-delay 5 --retry-connrefused http://${META_HOST}:${META_PORT}/api/health/check
+
+  deploy:
+    name: Deploy Storage Nodes
+    needs: [build, test]
+    runs-on: self-hosted
+    steps:
+      - name: Stop existing containers
+        run: |
+          for i in {0..4}; do
+            docker stop node-$i || true
+            docker rm node-$i || true
+          done
+
+      - name: Create Docker volumes
+        run: |
+          for i in {0..4}; do
+            docker volume create vol-node-$i || true
+          done
+
+      - name: Deploy storage nodes with volume persistence
+        run: |
+          # Node configuration parameters from secrets
+          META_HOST=${{ secrets.META_HOST }}
+          META_PORT=${{ secrets.META_PORT }}
+          NODE_HOST=${{ secrets.NODE_HOST }}
+          UPLOAD_DIR=${{ secrets.UPLOAD_DIR }}
+          NODE_BASE_PORT=${{ secrets.NODE_BASE_PORT }}
+          
+          # Deploy 5 nodes with different ports and volumes
+          for i in {0..4}; do
+            NODE_PORT=$((10#$NODE_BASE_PORT + i))
+          
+            docker volume create vol-node-$i
+          
+            docker run -d \
+              --name node-$i \
+              -p ${NODE_PORT}:8080 \
+              -e META_HOST=${META_HOST} \
+              -e META_PORT=${META_PORT} \
+              -e NODE_HOST=${NODE_HOST} \
+              -e NODE_PORT=${NODE_PORT} \
+              -e FILE_UPLOAD_DIR=${UPLOAD_DIR} \
+              -v vol-node-$i:${UPLOAD_DIR} \
+              dfs-storage-node
+          
+            echo "Deployed node-$i on port ${NODE_PORT} with volume vol-node-$i"
+          done
+
+      - name: Clean up dangling images
+        if: always()
+        run: docker image prune -f
