@@ -13,16 +13,16 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class MetadataConfig {
 
-    @Value("${meta.host:localhost}")
+    @Value("${meta.host}")
     private String metaHost;
 
-    @Value("${meta.port:8080}")
+    @Value("${meta.port}")
     private String metaPort;
 
-    @Value("${node.host:localhost}")
+    @Value("${node.host}")
     private String nodeHost;
 
-    @Value("${node.port:8090}")
+    @Value("${node.port}")
     private String nodePort;
 
     @Bean
