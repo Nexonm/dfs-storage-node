@@ -36,7 +36,7 @@ public class NodeRegisterService {
         if (response.getStatusCode().is2xxSuccessful()){
             log.info("Storage node was successfully registered.");
         }else{
-            log.error("Storage node was not registered. Status code: {}", response.getStatusCode());
+            log.error("Storage node was not registered. Status code: {}.", response.getStatusCode());
         }
     }
 
